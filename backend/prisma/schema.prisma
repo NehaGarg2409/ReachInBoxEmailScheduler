@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  googleId  String   @unique
+  email     String   @unique
+  name      String
+  avatarUrl String?
+  createdAt DateTime @default(now())
+
+  senders          Sender[]
+  slackConnection  SlackConnection?
+  batches          EmailBatch[]
+}
+
+model SlackConnection {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id])
+  teamId      String
+  teamName    String?
+  accessToken String
+  webhookUrl  String
+  createdAt   DateTime @default(now())
+}
+
+model Sender {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  displayName String
+  smtpUser    String
+  smtpPass    String
+  smtpHost    String   @default("smtp.ethereal.email")
+  smtpPort    Int      @default(587)
+  createdAt   DateTime @default(now())
+
+  batches EmailBatch[]
+  emails  Email[]
+}
+
+model EmailBatch {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  senderId         String
+  sender           Sender   @relation(fields: [senderId], references: [id])
+  subject          String
+  body             String
+  startTime        DateTime
+  delayMs          Int
+  hourlyLimit      Int
+  totalRecipients  Int
+  // Array of { filename, path, mimetype, size } for files/images attached at
+  // compose time. Stored once per batch (shared across all recipients) since
+  // attaching per-recipient copies would be wasteful and isn't a stated
+  // requirement. Files themselves live on local disk under UPLOAD_DIR — see
+  // routes/emails.ts — referenced here by path so the worker can attach them
+  // at send time, including after a server restart.
+  attachments      Json?
+  createdAt        DateTime @default(now())
+
+  emails Email[]
+}
+
+enum EmailStatus {
+  pending
+  queued
+  sent
+  failed
+}
+
+model Email {
+  id             String      @id @default(uuid())
+  batchId        String
+  batch          EmailBatch  @relation(fields: [batchId], references: [id])
+  senderId       String
+  sender         Sender      @relation(fields: [senderId], references: [id])
+  recipientEmail String
+  subject        String
+  body           String
+  status         EmailStatus @default(pending)
+  scheduledAt    DateTime
+  sentAt         DateTime?
+  errorMessage   String?
+  bullmqJobId    String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([status])
+  @@index([senderId, status])
+}

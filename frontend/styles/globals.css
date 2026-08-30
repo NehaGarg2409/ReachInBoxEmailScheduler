@@ -1,0 +1,49 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    background-color: #faf9f6;
+    color: #12172b;
+    font-family: "IBM Plex Sans", sans-serif;
+  }
+
+  *:focus-visible {
+    outline: 2px solid #2f5fff;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply font-mono text-xs uppercase tracking-widest text-muted;
+  }
+
+  .status-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-xs font-medium;
+  }
+}
+
+/* Signature element: a live pulse dot indicating queue activity */
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(47, 95, 255, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(47, 95, 255, 0);
+  }
+}
+
+.pulse-dot {
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot {
+    animation: none;
+  }
+}
