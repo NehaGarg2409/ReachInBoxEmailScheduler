@@ -12,7 +12,7 @@ function required(name: string, fallback?: string): string {
 export const env = {
   port: Number(process.env.PORT ?? 4000),
   sessionSecret: required("SESSION_SECRET", "dev-secret"),
-  frontendUrl: required("FRONTEND_URL", "http://localhost:3000"),
+  frontendUrl: required("FRONTEND_URL", "http://localhost:3001"),
   backendUrl: required("BACKEND_URL", "http://localhost:4000"),
 
   databaseUrl: required("DATABASE_URL"),
